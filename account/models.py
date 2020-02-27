@@ -1,7 +1,7 @@
 from django.db import models
 
 class Account(models.Model):
-    email      = models.CharField(max_length = 50)
+    email      = models.EmailField(max_length = 50)
     password   = models.CharField(max_length = 500)
     name       = models.CharField(max_length = 30)
     address    = models.CharField(max_length = 100)
@@ -13,4 +13,4 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now = True)
 
     class Meta:
-        db_table = 'accounts'
+        db_table = 'accounts'   

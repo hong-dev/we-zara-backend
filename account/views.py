@@ -2,18 +2,26 @@ import json
 import bcrypt
 import jwt
 
-
 from zara.settings import SECRET_KEY
 from .models       import Account
 
-from django.views import View
-from django.http  import HttpResponse, JsonResponse
+from django.views           import View
+from django.http            import HttpResponse, JsonResponse
+from django.core.validators import EmailValidator
+from django.core.exceptions import ValidationError
+
 
 class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
 
         try:
+            validator = EmailValidator()
+            try:
+                validator(account_data['email'])
+            except ValidationError:
+                return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 422)
+
             if Account.objects.filter(email = account_data['email']).exists():
                 return HttpResponse(status = 409)
 
