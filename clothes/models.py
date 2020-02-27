@@ -26,7 +26,7 @@ class Clothes(models.Model):
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
     item_category = models.ForeignKey(ItemCategory, on_delete = models.SET_NULL, null = True)
-    price         = models.DecimalField(max_digits = 8, decimal_places = 5)
+    price         = models.DecimalField(max_digits = 10, decimal_places = 5)
     description   = models.TextField
     composition   = models.TextField
     bestseller    = models.BooleanField
