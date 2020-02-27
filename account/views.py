@@ -7,9 +7,9 @@ from .models       import Account
 
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
+from django.db              import IntegrityError
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
-
 
 class SignupView(View):
     def post(self, request):
@@ -22,22 +22,22 @@ class SignupView(View):
             except ValidationError:
                 return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 422)
 
-            if Account.objects.filter(email = account_data['email']).exists():
-                return HttpResponse(status = 409)
+            try:
+                Account(
+                    email    = account_data['email'],
+                    password = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+                    name     = account_data['name'],
+                    address  = account_data['address'],
+                    country  = account_data['country'],
+                    phone    = account_data['phone'],
+                ).save()
+                return HttpResponse(status = 200)
 
-            Account(
-                email    = account_data['email'],
-                password = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
-                name     = account_data['name'],
-                address  = account_data['address'],
-                country  = account_data['country'],
-                phone    = account_data['phone'],
-            ).save()
-            return HttpResponse(status = 200)
+            except IntegrityError:
+                return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
 
         except KeyError:
-            return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
+                return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
 class SigninView(View):
     def post(self, request):
@@ -57,4 +57,3 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
