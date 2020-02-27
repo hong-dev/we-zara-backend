@@ -13,19 +13,10 @@ class SubCategory(models.Model):
     class Meta:
         db_table = 'sub_categories'
 
-class ItemCategory(models.Model):
-    item_type     = models.CharField(max_length = 45)
-    main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
-    sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
-
-    class Meta:
-        db_table = 'item_categories'
-
 class Clothes(models.Model):
     name          = models.CharField(max_length = 45)
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
-    item_category = models.ForeignKey(ItemCategory, on_delete = models.SET_NULL, null = True)
     price         = models.DecimalField(max_digits = 10, decimal_places = 5)
     description   = models.TextField
     composition   = models.TextField
