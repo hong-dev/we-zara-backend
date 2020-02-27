@@ -7,20 +7,18 @@ from .models       import Account
 
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
-from django.core.validators import EmailValidator
+from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
 
 class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
-        validator = EmailValidator()
 
         if Account.objects.filter(email = account_data['email']).exists():
             return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
 
         try:
-            validator(account_data['email'])
+            validate_email(account_data['email'])
 
             Account(
                 email    = account_data['email'],
@@ -33,7 +31,7 @@ class SignupView(View):
             return HttpResponse(status = 200)
 
         except ValidationError:
-                return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 422)
+            return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 400)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
@@ -56,4 +54,3 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
