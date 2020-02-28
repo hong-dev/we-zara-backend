@@ -15,11 +15,12 @@ class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
 
-        if account_data['phone'].isdigit() == False:
-            return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
-
         try:
+            if account_data['phone'].isdigit() == False:
+                return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
+
             validate_email(account_data['email'])
+
             Account(
                 email    = account_data['email'],
                 password = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
