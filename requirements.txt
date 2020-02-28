@@ -1,4 +1,5 @@
 asgiref==3.2.3
+astroid==2.3.3
 bcrypt==3.1.7
 beautifulsoup4==4.8.2
 bs4==0.0.1
@@ -7,11 +8,18 @@ cffi==1.14.0
 chardet==3.0.4
 Django==3.0.3
 django-cors-headers==3.2.1
+haversine==2.2.0
 idna==2.9
+isort==4.3.21
+lazy-object-proxy==1.4.3
+lxml==4.5.0
+mccabe==0.6.1
 mysqlclient==1.4.6
 pandas==1.0.1
 pycparser==2.19
 PyJWT==1.7.1
+pylint==2.4.4
+python-dateutil==2.8.1
 pytz==2019.3
 requests==2.23.0
 selenium==3.141.0
@@ -19,3 +27,4 @@ six==1.14.0
 soupsieve==1.9.5
 sqlparse==0.3.0
 urllib3==1.25.8
+wrapt==1.11.2
