@@ -5,7 +5,7 @@ from .models import Store
 from django.views import View
 from django.http  import HttpResponse,JsonResponse
 
-from haversine import  haversine
+from haversine import haversine
 
 class ShowMap(View):
     def post(self, request):
@@ -13,7 +13,7 @@ class ShowMap(View):
         map_data_province  = map_data.get('province',None)
         map_data_longitude = map_data.get('longitude',None)
         map_data_latitude  = map_data.get('latitude',None)
-        if(map_data_latitude and map_data_longitude and map_data_province):
+        if map_data_latitude and map_data_longitude and map_data_province:
             if Store.objects.filter(address__contains = map_data_province).exists():
                store_list = Store.objects.filter(address__contains=map_data_province).values()
                return JsonResponse({"all_data":list(store_list)}, status = 200)
