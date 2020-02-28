@@ -30,7 +30,7 @@ class ShowMap(View):
                             'latitude' :element.latitude,
                             'longitude':element.longitude
                         })
-                if len(stores)<1:
+                if len(stores) < 1:
                     return JsonResponse({'msg':'No Data'},status=200)
                 return JsonResponse({'map data':stores},status=200)
-        return JsonResponse({'msg':'Key Error'},status=401)
+        return JsonResponse({'msg':'Key Error'},status=400)
