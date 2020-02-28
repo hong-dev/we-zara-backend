@@ -13,23 +13,14 @@ class SubCategory(models.Model):
     class Meta:
         db_table = 'sub_categories'
 
-class ItemCategory(models.Model):
-    item_type     = models.CharField(max_length = 45)
-    main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
-    sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
-
-    class Meta:
-        db_table = 'item_categories'
-
 class Clothes(models.Model):
     name          = models.CharField(max_length = 45)
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
-    item_category = models.ForeignKey(ItemCategory, on_delete = models.SET_NULL, null = True)
     price         = models.DecimalField(max_digits = 10, decimal_places = 5)
-    description   = models.TextField
-    composition   = models.TextField
-    bestseller    = models.BooleanField
+    description   = models.TextField(max_length = 500, default='')
+    composition   = models.TextField(max_length = 300, default='')
+    bestseller    = models.BooleanField(default = False)
     size          = models.ManyToManyField('Size', through = 'ClothesSize')
     color         = models.ManyToManyField('Color', through = 'ClothesColor')
     care          = models.ManyToManyField('Care', through = 'ClothesCare')
