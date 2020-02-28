@@ -15,10 +15,11 @@ class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
 
+        if account_data['phone'].isdigit() == False:
+            return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
+
         try:
             validate_email(account_data['email'])
-            int(account_data['phone'])
-
             Account(
                 email    = account_data['email'],
                 password = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
@@ -28,9 +29,6 @@ class SignupView(View):
                 phone    = account_data['phone'],
             ).save()
             return HttpResponse(status = 200)
-
-        except ValueError:
-            return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
 
         except IntegrityError:
             return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
