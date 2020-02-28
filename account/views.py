@@ -7,6 +7,7 @@ from .models       import Account
 
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
+from django.db              import IntegrityError
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
@@ -14,10 +15,10 @@ class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
 
-        if Account.objects.filter(email = account_data['email']).exists():
-            return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
-
         try:
+            if account_data['phone'].isdigit() == False:
+                return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
+
             validate_email(account_data['email'])
 
             Account(
@@ -29,6 +30,9 @@ class SignupView(View):
                 phone    = account_data['phone'],
             ).save()
             return HttpResponse(status = 200)
+
+        except IntegrityError:
+            return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
 
         except ValidationError:
             return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 400)
