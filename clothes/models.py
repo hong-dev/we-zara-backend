@@ -18,9 +18,9 @@ class Clothes(models.Model):
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
     price         = models.DecimalField(max_digits = 10, decimal_places = 5)
-    description   = models.TextField
-    composition   = models.TextField
-    bestseller    = models.BooleanField
+    description   = models.TextField(max_length = 500, default='')
+    composition   = models.TextField(max_length = 300, default='')
+    bestseller    = models.BooleanField(default = False)
     size          = models.ManyToManyField('Size', through = 'ClothesSize')
     color         = models.ManyToManyField('Color', through = 'ClothesColor')
     care          = models.ManyToManyField('Care', through = 'ClothesCare')
