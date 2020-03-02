@@ -8,8 +8,8 @@ from .models import (
     ClothesSize
 )
 
-from django.views     import View
-from django.http      import HttpResponse, JsonResponse
+from django.views import View
+from django.http  import HttpResponse, JsonResponse
 
 class ClothesDetailView(View):
     def get(self, request, req_clothes_id, req_color_id):
