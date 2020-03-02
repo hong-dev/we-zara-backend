@@ -18,6 +18,12 @@ class SignupView(View):
         try:
             if account_data['phone'].isdigit() == False:
                 return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
+            if (len(account_data['password']) < 8 or
+                account_data['password'].islower() or
+                account_data['password'].isupper() or
+                account_data['password'].isdigit() or
+                account_data['password'].isalpha()):
+                return JsonResponse({"message":"PASSWORD_VALIDATION_ERROR"}, status = 400)
 
             validate_email(account_data['email'])
 
