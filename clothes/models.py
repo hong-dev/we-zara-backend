@@ -83,3 +83,12 @@ class ClothesCare(models.Model):
 
     class Meta:
         db_table = 'clothes_cares'
+
+class New(models.Model):
+    main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
+    image         = models.URLField(max_length = 200)
+    created_at    = models.DateTimeField(auto_now_add = True)
+    updated_at    = models.DateTimeField(auto_now = True)
+
+    class Meta:
+        db_table = 'news'
