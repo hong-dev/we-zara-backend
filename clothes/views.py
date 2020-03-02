@@ -6,8 +6,8 @@ from .models import (
     ClothesImage,
 )
 
-from django.views     import View
-from django.http      import HttpResponse, JsonResponse
+from django.views import View
+from django.http  import HttpResponse, JsonResponse
 
 class SubCategoryView(View):
     def get(self, request, gender, clothes_type):
