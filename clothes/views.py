@@ -29,7 +29,6 @@ class SubCategoryView(View):
                     'name'         : result.name,
                     'price'        : result.price,
                     'other_colors' : len(clothes_color.filter(clothes_id = result.id))-1
-
                 }
             for result in clothes_list]
 
