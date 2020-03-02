@@ -34,13 +34,13 @@ class ClothesImage(models.Model):
     clothes    = models.ForeignKey('Clothes', on_delete = models.SET_NULL, null = True)
     color      = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
     main_image = models.URLField(max_length = 200)
-    image1     = models.URLField(max_length = 200)
-    image2     = models.URLField(max_length = 200)
-    image3     = models.URLField(max_length = 200)
-    image4     = models.URLField(max_length = 200)
-    image5     = models.URLField(max_length = 200)
-    image6     = models.URLField(max_length = 200)
-    image7     = models.URLField(max_length = 200)
+    image1     = models.URLField(max_length = 200, null = True)
+    image2     = models.URLField(max_length = 200, null = True)
+    image3     = models.URLField(max_length = 200, null = True)
+    image4     = models.URLField(max_length = 200, null = True)
+    image5     = models.URLField(max_length = 200, null = True)
+    image6     = models.URLField(max_length = 200, null = True)
+    image7     = models.URLField(max_length = 200, null = True)
 
     class Meta:
         db_table = 'clothes_images'
@@ -87,8 +87,8 @@ class ClothesCare(models.Model):
 class New(models.Model):
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     image         = models.URLField(max_length = 200)
-    created_at    = models.DateTimeField(auto_now_add = True)
-    updated_at    = models.DateTimeField(auto_now = True)
+    created_at    = models.DateTimeField(auto_now_add = True, null = True)
+    updated_at    = models.DateTimeField(auto_now = True, null = True)
 
     class Meta:
         db_table = 'news'
