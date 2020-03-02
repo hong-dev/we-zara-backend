@@ -25,7 +25,7 @@ class SubCategoryView(View):
                     'id '          : result.id,
                     'image'        : clothes_image.filter(clothes_id = result.id)[0].image,
                     'color'        : clothes_color.filter(clothes_id = result.id)[0].color.name,
-                    'bestseller'   : result.bestseller,
+                    'new'          : result.new,
                     'name'         : result.name,
                     'price'        : result.price,
                     'other_colors' : len(clothes_color.filter(clothes_id = result.id))-1
