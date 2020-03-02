@@ -22,6 +22,7 @@ class SubCategoryView(View):
         try:
             clothes_lists = [
                 {
+                    'id '          : result.id,
                     'image'        : clothes_image.filter(clothes_id = result.id)[0].image,
                     'color'        : clothes_color.filter(clothes_id = result.id)[0].color.name,
                     'bestseller'   : result.bestseller,
