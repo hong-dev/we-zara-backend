@@ -1,50 +1,34 @@
 import json
 
-from .models import (
-    Clothes,
-    ClothesColor,
-    ClothesImage,
-    ClothesCare,
-    ClothesSize
-)
+from .models import Clothes, Color
 
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
 class ClothesDetailView(View):
     def get(self, request, req_clothes_id, req_color_id):
-        clothes_detail = Clothes.objects.filter(id = req_clothes_id)[0]
-
-        clothes_image = ClothesImage.objects
-        clothes_color = ClothesColor.objects.select_related('color').filter(clothes_id = req_clothes_id)
-        clothes_care  = ClothesCare.objects.select_related('care').filter(clothes_id = req_clothes_id)
-        clothes_size  = ClothesSize.objects.select_related('size').filter(clothes_id = req_clothes_id)
+        clothes_detail = Clothes.objects.prefetch_related(
+            'clothesimage_set',
+            'clothescare_set',
+            'clothessize_set').filter(id = req_clothes_id)
 
         try:
-            clothes_details = {
-                    'images'       : clothes_image.get(
-                        clothes_id = req_clothes_id,
-                        color_id   = req_color_id
-                    ).image,
-                    'name'         : clothes_detail.name,
-                    'price'        : clothes_detail.price,
-                    'color'        : clothes_color.get(
-                        color_id   = req_color_id
-                    ).color.name,
-                    'other_colors' : [element.color.name for element in clothes_color],
-                    'description'  : clothes_detail.description,
-                    'size'         : [element.size.name for element in clothes_size],
-                    'composition'  : clothes_detail.composition,
-                    'care'         : [element.care.name for element in clothes_care]
-                }
-            clothes_details['other_colors'].remove(clothes_details['color'])
+            clothes_details = [{
+                'clothes_id'   : req_clothes_id,
+                'images'       : list(clothes.clothesimage_set.filter(clothes_id = req_clothes_id, color_id = req_color_id).values_list('image', flat = True)),
+                'clothes'      : {"clothes_id"   : req_clothes_id,
+                                  "clothes_name" : Clothes.objects.get(id = req_clothes_id).name},
+                'price'        : clothes.price,
+                'color'        : {"color_id"   : req_color_id,
+                                  "color_name" : Color.objects.get(id = req_color_id).name},
+                'description'  : clothes.description,
+                'size'         : list(clothes.clothessize_set.filter(clothes_id = req_clothes_id).values('size_id', 'size__name')),
+                'other_colors' : list(clothes.clothesimage_set.filter(clothes_id = req_clothes_id).values('color__name','image')),
+                'composition'  : clothes.composition,
+                'care'         : list(clothes.clothescare_set.filter(clothes_id = req_clothes_id).values('care__name', flat = True))
+            } for clothes in clothes_detail]
+
             return JsonResponse({"clothes_details": clothes_details}, status = 200)
-
-        except ClothesImage.DoesNotExist:
-            return JsonResponse({"message": "INVALID_VALUE"}, status = 400)
-
-        except ClothesColor.DoesNotExist:
-            return JsonResponse({"message": "INVALID_VALUE"}, status = 400)
 
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
