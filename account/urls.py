@@ -1,4 +1,4 @@
-from .views import SignupView, SigninView, AccountView
+from .views import SignupView, SigninView
 
 from django.urls import path
 
