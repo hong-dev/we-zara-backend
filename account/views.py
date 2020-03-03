@@ -4,7 +4,7 @@ import jwt
 
 from zara.settings import SECRET_KEY
 from .models       import Account
-
+from .utils       import login_required
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
 from django.db              import IntegrityError
@@ -58,3 +58,13 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+
+
+class AccountView(View):
+    @login_required
+    def get(self, request):
+        print(request.user)
+        print(request.body)
+        print(request.headers)
+        print(request.GET)
+        return JsonResponse({'email':request.user.email}, status = 200)
