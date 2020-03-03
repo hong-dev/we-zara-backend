@@ -1,8 +1,6 @@
 import json
 
 from .models import (
-    Clothes,
-    ClothesColor,
     ClothesImage,
 )
 
@@ -11,24 +9,21 @@ from django.http  import HttpResponse, JsonResponse
 
 class SubCategoryView(View):
     def get(self, request, gender, clothes_type):
-        clothes_list = Clothes.objects.select_related(
-            'main_category',
-            'sub_category'
-        ).filter(main_category = gender, sub_category = clothes_type)
-
-        clothes_image = ClothesImage.objects
-        clothes_color = ClothesColor.objects.select_related('color')
+        clothes_list = ClothesImage.objects.select_related('clothes').filter(
+            clothes__main_category_id = gender,
+            clothes__sub_category_id  = clothes_type
+        )
 
         try:
             clothes_lists = [
                 {
-                    'id '          : result.id,
-                    'image'        : clothes_image.filter(clothes_id = result.id)[0].main_image,
-                    'color'        : clothes_color.filter(clothes_id = result.id)[0].color.name,
-                    'new'          : result.new,
-                    'name'         : result.name,
-                    'price'        : result.price,
-                    'other_colors' : len(clothes_color.filter(clothes_id = result.id))-1
+                    'id '          : result.clothes.id,
+                    'image'        : result.main_image,
+                    'color'        : result.color_id,
+                    'new'          : result.clothes.new,
+                    'name'         : result.clothes.name,
+                    'price'        : result.clothes.price,
+                    'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 }
             for result in clothes_list]
 
