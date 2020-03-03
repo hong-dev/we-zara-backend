@@ -18,11 +18,11 @@ def validate(password):
         lambda s: any(x.isdigit() for x in s),
         lambda s: len(s) >= 8
     ]
-    is_password_invalid = False
+    is_password_valid = True
     for validator in validate_condition:
         if not validator(password):
-            return True
-    return is_password_invalid
+            return False
+    return is_password_valid
 
 class SignupView(View):
     def post(self, request):
@@ -31,7 +31,7 @@ class SignupView(View):
         try:
             if account_data['phone'].isdigit() == False:
                 return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
-            if validate(account_data['password']):
+            if not validate(account_data['password']):
                 return JsonResponse({"message":"PASSWORD_VALIDATION_ERROR"}, status = 400)
 
             validate_email(account_data['email'])
