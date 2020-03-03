@@ -21,7 +21,7 @@ class Clothes(models.Model):
     description   = models.TextField(max_length = 500, default='')
     composition   = models.TextField(max_length = 300, default='')
     bestseller    = models.BooleanField(default = False)
-    new           = models.BooleanField(default = False)
+    is_new        = models.BooleanField(default = False)
     size          = models.ManyToManyField('Size', through = 'ClothesSize')
     color         = models.ManyToManyField('Color', through = 'ClothesColor')
     care          = models.ManyToManyField('Care', through = 'ClothesCare')
