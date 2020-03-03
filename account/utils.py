@@ -18,14 +18,14 @@ def login_required(func):
                 request.user = user
 
            except jwt.DecodeError:
-               return JsonResponse({"msg" : "Invalid token"}, status = 403)
+               return JsonResponse({"messsage" : "INVALID_TOKEN"}, status = 403)
 
            except Account.DoesNotExist:
-               return JsonResponse({"msg" : "Account does not exist"}, status=401)
+               return JsonResponse({"messsage" : "INVALID_ACCOUNT"}, status=401)
            
            return func(self, request, *args, **kwargs)
        
-       return JsonResponse({"msg" : "You need to login"}, status=401)
+       return JsonResponse({"messsage" : "INVALID_ACCESS"}, status=401)
    return wrapper
 
 
