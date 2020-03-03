@@ -58,13 +58,3 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
-
-class AccountView(View):
-    @login_required
-    def get(self, request):
-        print(request.user)
-        print(request.body)
-        print(request.headers)
-        print(request.GET)
-        return JsonResponse({'email':request.user.email}, status = 200)
