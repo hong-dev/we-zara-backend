@@ -2,8 +2,9 @@ import json
 import bcrypt
 import jwt
 
-from zara.settings import SECRET_KEY
-from .models       import Account
+from zara.settings          import SECRET_KEY
+from .models                import Account
+from .utils                 import login_required
 
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
@@ -58,3 +59,5 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+
+
