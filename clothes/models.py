@@ -18,8 +18,8 @@ class Clothes(models.Model):
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
     sub_category  = models.ForeignKey(SubCategory, on_delete = models.SET_NULL, null = True)
     price         = models.IntegerField(default = 0)
-    description   = models.TextField(max_length = 500, default='')
-    composition   = models.TextField(max_length = 300, default='')
+    description   = models.TextField()
+    composition   = models.TextField()
     bestseller    = models.BooleanField(default = False)
     is_new        = models.BooleanField(default = False)
     size          = models.ManyToManyField('Size', through = 'ClothesSize')
@@ -34,14 +34,14 @@ class Clothes(models.Model):
 class ClothesImage(models.Model):
     clothes    = models.ForeignKey('Clothes', on_delete = models.SET_NULL, null = True)
     color      = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
-    main_image = models.URLField(max_length = 200)
-    image1     = models.URLField(max_length = 200, null = True)
-    image2     = models.URLField(max_length = 200, null = True)
-    image3     = models.URLField(max_length = 200, null = True)
-    image4     = models.URLField(max_length = 200, null = True)
-    image5     = models.URLField(max_length = 200, null = True)
-    image6     = models.URLField(max_length = 200, null = True)
-    image7     = models.URLField(max_length = 200, null = True)
+    main_image = models.URLField()
+    image1     = models.URLField(null = True)
+    image2     = models.URLField(null = True)
+    image3     = models.URLField(null = True)
+    image4     = models.URLField(null = True)
+    image5     = models.URLField(null = True)
+    image6     = models.URLField(null = True)
+    image7     = models.URLField(null = True)
 
     class Meta:
         db_table = 'clothes_images'
@@ -73,7 +73,7 @@ class ClothesColor(models.Model):
         db_table = 'clothes_colors'
 
 class Care(models.Model):
-    name = models.TextField(max_length = 1000, default = '')
+    name = models.TextField()
 
     class Meta:
         db_table = 'cares'
@@ -87,7 +87,7 @@ class ClothesCare(models.Model):
 
 class New(models.Model):
     main_category = models.ForeignKey(MainCategory, on_delete = models.SET_NULL, null = True)
-    image         = models.URLField(max_length = 200)
+    image         = models.URLField()
     created_at    = models.DateTimeField(auto_now_add = True, null = True)
     updated_at    = models.DateTimeField(auto_now = True, null = True)
 
