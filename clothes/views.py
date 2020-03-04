@@ -6,6 +6,7 @@ from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
 class SubCategoryView(View):
+    #카테고리별 상품 목록
     def get(self, request, gender, clothes_type):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
@@ -29,7 +30,48 @@ class SubCategoryView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
+    #Filter
+    def post(self, request, gender, clothes_type):
+        filter_data = json.loads(request.body)
+
+        req_color = filter_data.get('color', None)
+        req_size  = filter_data.get('size', None)
+        req_price = filter_data.get('price', 0)
+
+        try:
+            clothes_list = ClothesImage.objects.select_related('clothes').filter(
+                clothes__main_category_id = gender,
+                clothes__sub_category_id  = clothes_type,
+            )
+
+            if req_color:
+                clothes_list = clothes_list.filter(color_id = req_color)
+            if req_size:
+                clothes_list = clothes_list.filter(clothes__clothessize__size_id = req_size)
+            if req_price:
+                clothes_list = clothes_list.filter(clothes__price__lte = req_price)
+
+            clothes_lists = [
+                {
+                    'id '          : result.clothes_id,
+                    'image'        : result.main_image,
+                    'color'        : result.color_id,
+                    'new'          : result.clothes.is_new,
+                    'name'         : result.clothes.name,
+                    'price'        : result.clothes.price,
+                    'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
+                } for result in clothes_list]
+
+            if len(clothes_lists) == 0:
+                return JsonResponse({"message": "ITEM_DOES_NOT_EXIST"}, status = 400)
+
+            return JsonResponse({"clothes_list": clothes_lists}, status = 200)
+
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
 class ClothesNewView(View):
+    #신상품 목록
     def get(self, request, gender):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
@@ -58,6 +100,7 @@ class ClothesNewView(View):
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
 class ClothesDetailView(View):
+    #제품 상세페이지
     def get(self, request, req_clothes_id, req_color_id):
         try:
             if not ClothesImage.objects.filter(clothes_id = req_clothes_id, color_id = req_color_id).exists():
@@ -90,6 +133,7 @@ class ClothesDetailView(View):
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
 class SearchView(View):
+    #검색
     def get(self, request):
         try:
             keyword = request.GET.get('keyword', None)
