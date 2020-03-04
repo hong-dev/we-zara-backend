@@ -96,6 +96,8 @@ class SearchView(View):
 
             clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__contains = keyword)
 
+            search_list = [element.clothes.name for element in clothes_list][:5]
+
             result_list = [
                 {
                     'id'           : result.clothes_id,
@@ -110,7 +112,7 @@ class SearchView(View):
             if len(result_list) == 0:
                 return JsonResponse({"message": "ITEM_DOES_NOT_EXIST"}, status = 400)
 
-            return JsonResponse({"results": result_list}, status = 200)
+            return JsonResponse({"list" : search_list, "results": result_list}, status = 200)
 
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
