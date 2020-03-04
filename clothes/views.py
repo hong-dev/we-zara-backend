@@ -43,7 +43,7 @@ class ClothesNewView(View):
 
             new_list = [
                 {
-					'id'           : result.clothes_id,
+                    'id'           : result.clothes_id,
                     'image'        : result.main_image,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
