@@ -38,12 +38,13 @@ class SignupView(View):
             validate_email(account_data['email'])
 
             Account(
-                email    = account_data['email'],
-                password = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
-                name     = account_data['name'],
-                address  = account_data['address'],
-                country  = account_data['country'],
-                phone    = account_data['phone'],
+                email     = account_data['email'],
+                password  = bcrypt.hashpw(account_data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+                name      = account_data['name'],
+                zip_code  = account_data['zip_code'],
+                address_1 = account_data['address_1'],
+                country   = account_data['country'],
+                phone     = account_data['phone'],
             ).save()
             return HttpResponse(status = 200)
 
@@ -74,5 +75,3 @@ class SigninView(View):
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
-
