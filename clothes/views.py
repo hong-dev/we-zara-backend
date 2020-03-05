@@ -1,6 +1,6 @@
 import json
 
-from .models import Clothes, Color, ClothesImage, New
+from .models import Clothes, Color, Size, ClothesImage, New
 
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
@@ -10,13 +10,24 @@ class SubCategoryView(View):
     def get(self, request, gender, clothes_type):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
-            clothes__main_category_id = gender,
-            clothes__sub_category_id  = clothes_type
-        )
+                clothes__main_category_id = gender,
+                clothes__sub_category_id  = clothes_type
+            )
+
+            color_list = Color.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
+            size_list  = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
+            price_list = Clothes.objects.filter(main_category_id = gender, sub_category_id = clothes_type)
+
+            filter_list = {
+                'colors' : list(set([(element.id, element.name) for element in color_list])),
+                'sizes'  : list(set([(element.id, element.name) for element in size_list])),
+                'prices' : {"min_price" : price_list.order_by('price')[0].price,
+                            "max_price" : price_list.order_by('price')[len(price_list)-1].price}
+            }
 
             clothes_lists = [
                 {
-                    'id '          : result.clothes_id,
+                    'id '          : result.clothes.id,
                     'image'        : result.main_image,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
@@ -25,7 +36,7 @@ class SubCategoryView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"clothes_list": clothes_lists}, status = 200)
+            return JsonResponse({"filter_list": filter_list, "clothes_list": clothes_lists}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
