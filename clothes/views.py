@@ -29,8 +29,7 @@ class SubCategoryView(View):
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
                 'sizes'  : extract_data("sizes", deduplication_size),
-                'prices' : {"min_price" : clothes_list[0].clothes.price,
-                            "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
+                'prices' : [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
             }
 
             clothes_lists = [
@@ -104,8 +103,7 @@ class ClothesNewView(View):
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
                 'sizes'  : extract_data("sizes", deduplication_size),
-                'prices' : {"min_price" : clothes_list[0].clothes.price,
-                            "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
+                'prices' : [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
             }
 
             clothes_new    = New.objects.select_related('main_category').filter(main_category_id = gender)
