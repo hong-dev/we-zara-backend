@@ -1,4 +1,5 @@
 import json
+import collections
 
 from .models import Clothes, Color, Size, ClothesImage, New
 
@@ -6,23 +7,29 @@ from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
 class SubCategoryView(View):
-    #카테고리별 상품 목록
     def get(self, request, gender, clothes_type):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
                 clothes__main_category_id = gender,
                 clothes__sub_category_id  = clothes_type
-            )
+            ).order_by('clothes__price')
 
-            color_list = Color.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
-            size_list  = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
-            price_list = Clothes.objects.filter(main_category_id = gender, sub_category_id = clothes_type)
+            color_spec          = collections.namedtuple("colors", "color_id, color_name")
+            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
+            namedtuple_color    = [color_spec(element[0], element[1]) for element in deduplication_color]
+            dict_color          = [dict(tuples._asdict()) for tuples in namedtuple_color]
+
+            size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
+            size_spec          = collections.namedtuple("sizes", "size_id, size_name")
+            deduplication_size = set([(size.id, size.name) for size in size_list])
+            namedtuple_size    = [size_spec(element[0], element[1]) for element in deduplication_size]
+            dict_size          = [dict(tuples._asdict()) for tuples in namedtuple_size]
 
             filter_list = {
-                'colors' : list(set([(element.id, element.name) for element in color_list])),
-                'sizes'  : list(set([(element.id, element.name) for element in size_list])),
-                'prices' : {"min_price" : price_list.order_by('price')[0].price,
-                            "max_price" : price_list.order_by('price')[len(price_list)-1].price}
+                'colors' : dict_color,
+                'sizes'  : dict_size,
+                'prices' : {"min_price" : clothes_list[0].clothes.price,
+                            "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
             }
 
             clothes_lists = [
@@ -36,12 +43,11 @@ class SubCategoryView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"filter_list": filter_list, "clothes_list": clothes_lists}, status = 200)
+            return JsonResponse({"clothes_list": clothes_lists, "filter_list": filter_list}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
-    #Filter
     def post(self, request, gender, clothes_type):
         filter_data = json.loads(request.body)
 
@@ -82,16 +88,32 @@ class SubCategoryView(View):
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
 class ClothesNewView(View):
-    #신상품 목록
     def get(self, request, gender):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
                 clothes__main_category_id = gender,
                 clothes__is_new           = True
-             )
+             ).order_by('clothes__price')
 
-            clothes_new = New.objects.select_related('main_category').filter(main_category_id = gender)
+            color_spec          = collections.namedtuple("colors", "color_id, color_name")
+            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
+            namedtuple_color    = [color_spec(element[0], element[1]) for element in deduplication_color]
+            dict_color          = [dict(tuples._asdict()) for tuples in namedtuple_color]
 
+            size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
+            size_spec          = collections.namedtuple("sizes", "size_id, size_name")
+            deduplication_size = set([(size.id, size.name) for size in size_list])
+            namedtuple_size    = [size_spec(element[0], element[1]) for element in deduplication_size]
+            dict_size          = [dict(tuples._asdict()) for tuples in namedtuple_size]
+
+            filter_list = {
+                'colors' : dict_color,
+                'sizes'  : dict_size,
+                'prices' : {"min_price" : clothes_list[0].clothes.price,
+                            "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
+            }
+
+            clothes_new    = New.objects.select_related('main_category').filter(main_category_id = gender)
             marketing_list = list(clothes_new.values_list('image', flat = True))
 
             new_list = [
@@ -105,13 +127,12 @@ class ClothesNewView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"marketing": marketing_list, "new": new_list}, status = 200)
+            return JsonResponse({"marketing": marketing_list, "new": new_list, "filter_list": filter_list}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
 class ClothesDetailView(View):
-    #제품 상세페이지
     def get(self, request, req_clothes_id, req_color_id):
         try:
             if not ClothesImage.objects.filter(clothes_id = req_clothes_id, color_id = req_color_id).exists():
@@ -144,7 +165,6 @@ class ClothesDetailView(View):
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
 class SearchView(View):
-    #검색
     def get(self, request):
         try:
             keyword = request.GET.get('keyword', None)
