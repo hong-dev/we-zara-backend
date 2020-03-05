@@ -18,9 +18,7 @@ class CartView(View):
             user_data    = request.user.email
             user_id      = Account.objects.get(email = user_data).id
             get_order    = Order.objects.filter(account = user_id).get()
-            order        = get_order.orderedclothes_set.all().annotate(
-                               a_price=ExpressionWrapper(F('quantity')*F('clothes__price'),output_field=DecimalField(10,2))
-                           )
+            order        = get_order.orderedclothes_set.all().annotate(a_price=ExpressionWrapper(F('quantity')*F('clothes__price'),output_field=DecimalField(10,2)))
 
             clothes_list =[
                 {
@@ -53,30 +51,9 @@ class CartView(View):
             user_data = request.user.email
             user_id   = Account.objects.get(email=user_data).id
             order     = Order.objects.filter(account=user_id)
-            if order.exists():
-                oc = order.get().orderedclothes_set.filter(
-                    clothes = data['clothes_id'],
-                    size    = data['size_id'],
-                    color   = data['color_id']
-                )
-                if oc.exists():
-                    oc.update(quantity=oc.get().quantity+1)
-                else:
-                    oc.create(
-                        order_id   = order.get().id,
-                        clothes_id = data['clothes_id'],
-                        size_id    = data['size_id'],
-                        color_id   = data['color_id'],
-                        quantity   = 1
-                    )
-            else:
-                order.create(account_id=user_id,order_status_id = 1)
-                order.get().orderedclothes_set.create(
-                    clothes_id = data['clothes_id'],
-                    size_id    = data['size_id'],
-                    color_id   = data['color_id'],
-                    quantity   = 1
-                )
+
+            self.make_orders(order,user_id,data)
+
             return HttpResponse(status=200)
 
         except ObjectDoesNotExist:
@@ -117,3 +94,29 @@ class CartView(View):
             return HttpResponse(status=400)
         except TypeError:
             return HttpResponse(status=400)
+
+    def make_orders(self,order,user_id,data):
+            if order.exists():
+                oc = order.get().orderedclothes_set.filter(
+                    clothes = data['clothes_id'],
+                    size    = data['size_id'],
+                    color   = data['color_id']
+                )
+                if oc.exists():
+                    oc.update(quantity=oc.get().quantity+1)
+                else:
+                    oc.create(
+                        order_id   = order.get().id,
+                        clothes_id = data['clothes_id'],
+                        size_id    = data['size_id'],
+                        color_id   = data['color_id'],
+                        quantity   = 1
+                    )
+            else:
+                order.create(account_id=user_id,order_status_id = 1)
+                order.get().orderedclothes_set.create(
+                    clothes_id = data['clothes_id'],
+                    size_id    = data['size_id'],
+                    color_id   = data['color_id'],
+                    quantity   = 1
+                )
