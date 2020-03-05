@@ -7,7 +7,7 @@ from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
 def extract_data(field_name, deduplicated_list):
-    field_spec      = collections.namedtuple(field_name, f"{field_name}_id, {field_name}_name")
+    field_spec      = collections.namedtuple(field_name, "id, name")
     namedtuple_list = [field_spec(element[0], element[1]) for element in deduplicated_list]
     dict_field      = [dict(tuples._asdict()) for tuples in namedtuple_list]
 
@@ -26,10 +26,12 @@ class SubCategoryView(View):
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
             deduplication_size = set([(size.id, size.name) for size in size_list])
 
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
                 'sizes'  : extract_data("sizes", deduplication_size),
-                'prices' : [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+                'prices' : [{"id": index, "name": value} for index, value in enumerate(price_list)]
             }
 
             clothes_lists = [
@@ -100,10 +102,12 @@ class ClothesNewView(View):
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
             deduplication_size = set([(size.id, size.name) for size in size_list])
 
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
                 'sizes'  : extract_data("sizes", deduplication_size),
-                'prices' : [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+                'prices' : [{"id": index, "name": value} for index, value in enumerate(price_list)]
             }
 
             clothes_new    = New.objects.select_related('main_category').filter(main_category_id = gender)
