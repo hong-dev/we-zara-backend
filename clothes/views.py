@@ -1,17 +1,75 @@
 import json
+import random
+import collections
 
-from .models import Clothes, Color, ClothesImage, New
+from .models import Clothes, Color, Size, ClothesImage, New
 
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
+
+def extract_data(field_name, deduplicated_list):
+    field_spec      = collections.namedtuple(field_name, "id, name")
+    namedtuple_list = [field_spec(element[0], element[1]) for element in deduplicated_list]
+    dict_field      = [dict(tuples._asdict()) for tuples in namedtuple_list]
+
+    return dict_field
 
 class SubCategoryView(View):
     def get(self, request, gender, clothes_type):
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
-            clothes__main_category_id = gender,
-            clothes__sub_category_id  = clothes_type
-        )
+                clothes__main_category_id = gender,
+                clothes__sub_category_id  = clothes_type
+            ).order_by('clothes__price')
+
+            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
+
+            size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
+            deduplication_size = set([(size.id, size.name) for size in size_list])
+
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+
+            filter_list = {
+                'colors' : extract_data("colors", deduplication_color),
+                'sizes'  : extract_data("sizes", deduplication_size),
+                'prices' : [{"id": index, "name": value} for index, value in enumerate(price_list)]
+            }
+
+            clothes_lists = [
+                {
+                    'id '          : result.clothes.id,
+                    'image'        : result.main_image,
+                    'color'        : result.color_id,
+                    'new'          : result.clothes.is_new,
+                    'name'         : result.clothes.name,
+                    'price'        : result.clothes.price,
+                    'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
+                } for result in clothes_list]
+
+            return JsonResponse({"filter_list": filter_list, "clothes_list": clothes_lists}, status = 200)
+
+        except KeyError:
+            return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+
+    def post(self, request, gender, clothes_type):
+        filter_data = json.loads(request.body)
+
+        req_color = filter_data.get('color', None)
+        req_size  = filter_data.get('size', None)
+        req_price = filter_data.get('price', 0)
+
+        try:
+            clothes_list = ClothesImage.objects.select_related('clothes').filter(
+                clothes__main_category_id = gender,
+                clothes__sub_category_id  = clothes_type,
+            )
+
+            if req_color:
+                clothes_list = clothes_list.filter(color_id = req_color)
+            if req_size:
+                clothes_list = clothes_list.filter(clothes__clothessize__size_id = req_size)
+            if req_price:
+                clothes_list = clothes_list.filter(clothes__price__lte = req_price)
 
             clothes_lists = [
                 {
@@ -24,10 +82,13 @@ class SubCategoryView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
+            if len(clothes_lists) == 0:
+                return JsonResponse({"message": "ITEM_DOES_NOT_EXIST"}, status = 400)
+
             return JsonResponse({"clothes_list": clothes_lists}, status = 200)
 
         except KeyError:
-            return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
 class ClothesNewView(View):
     def get(self, request, gender):
@@ -35,10 +96,22 @@ class ClothesNewView(View):
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
                 clothes__main_category_id = gender,
                 clothes__is_new           = True
-             )
+             ).order_by('clothes__price')
 
-            clothes_new = New.objects.select_related('main_category').filter(main_category_id = gender)
+            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
 
+            size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
+            deduplication_size = set([(size.id, size.name) for size in size_list])
+
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+
+            filter_list = {
+                'colors' : extract_data("colors", deduplication_color),
+                'sizes'  : extract_data("sizes", deduplication_size),
+                'prices' : [{"id": index, "name": value} for index, value in enumerate(price_list)]
+            }
+
+            clothes_new    = New.objects.select_related('main_category').filter(main_category_id = gender)
             marketing_list = list(clothes_new.values_list('image', flat = True))
 
             new_list = [
@@ -52,7 +125,7 @@ class ClothesNewView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"marketing": marketing_list, "new": new_list}, status = 200)
+            return JsonResponse({"filter_list": filter_list, "marketing": marketing_list, "new": new_list}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
@@ -94,14 +167,18 @@ class SearchView(View):
         try:
             keyword = request.GET.get('keyword', None)
 
-            clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__contains = keyword)
+            clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__icontains = keyword)
 
-            search_list = [element.clothes.name for element in clothes_list][:5]
+            name_list = [element.clothes.name for element in clothes_list]
+            if len(name_list) < 5:
+                search_list = random.sample(name_list, len(name_list))
+            else:
+                search_list = random.sample(name_list, 5)
 
             result_list = [
                 {
                     'id'           : result.clothes_id,
-                    'image'        : result.main_image,
+                    'image'        : result.image1,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
                     'name'         : result.clothes.name,
