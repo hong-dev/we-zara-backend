@@ -164,7 +164,7 @@ class SearchView(View):
         try:
             keyword = request.GET.get('keyword', None)
 
-            clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__contains = keyword)
+            clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__icontains = keyword)
 
             search_list = [element.clothes.name for element in clothes_list][:5]
 
