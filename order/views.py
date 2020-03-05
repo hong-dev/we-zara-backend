@@ -18,7 +18,10 @@ class CartView(View):
             user_data    = request.user.email
             user_id      = Account.objects.get(email = user_data).id
             get_order    = Order.objects.filter(account = user_id).get()
-            order        = get_order.orderedclothes_set.all().annotate(a_price=ExpressionWrapper(F('quantity')*F('clothes__price'),output_field=DecimalField(10,2)))
+            order        = get_order.orderedclothes_set.all().annotate(
+                               a_price=ExpressionWrapper(F('quantity')*F('clothes__price'),output_field=DecimalField(10,2))
+                           )
+
             clothes_list =[
                 {
                     'ordered_clothes_id'   :result.id,
@@ -42,7 +45,7 @@ class CartView(View):
             return HttpResponse(status=400)
         except KeyError:
             return HttpResponse(status=400)
-            
+
     @login_required
     def post(self, request):
         try:
@@ -51,16 +54,15 @@ class CartView(View):
             user_id   = Account.objects.get(email=user_data).id
             order     = Order.objects.filter(account=user_id)
             if order.exists():
-                orderclothes=OrderedClothes.objects.filter(
-                    order   = order.get().id,
+                oc = order.get().orderedclothes_set.filter(
                     clothes = data['clothes_id'],
                     size    = data['size_id'],
                     color   = data['color_id']
                 )
-                if orderclothes.exists():
-                    orderclothes.update(quantity=orderclothes.get().quantity +1)
+                if oc.exists():
+                    oc.update(quantity=oc.get().quantity+1)
                 else:
-                    OrderedClothes.objects.create(
+                    oc.create(
                         order_id   = order.get().id,
                         clothes_id = data['clothes_id'],
                         size_id    = data['size_id'],
@@ -68,13 +70,8 @@ class CartView(View):
                         quantity   = 1
                     )
             else:
-                order=Order.objects.create(
-                    account_id      = user_id,
-                    order_status_id = 1
-                )
-                # order.update()
-                OrderedClothes.objects.create(
-                    order_id   = order.id,
+                order.create(account_id=user_id,order_status_id = 1)
+                order.get().orderedclothes_set.create(
                     clothes_id = data['clothes_id'],
                     size_id    = data['size_id'],
                     color_id   = data['color_id'],
@@ -90,6 +87,8 @@ class CartView(View):
             return HttpResponse(status=400)
         except KeyError:
             return HttpResponse(status=400)
+        except TypeError:
+            return HttpResponse(status=400)
 
     @login_required
     def delete(self, request):
@@ -100,10 +99,9 @@ class CartView(View):
             order                  = Order.objects.filter(id=get_order_id)
             orderclothes           = order.get().orderedclothes_set.filter(id=get_ordered_clothes_id)
 
-            if orderclothes.exists()  and Order.objects.filter(id=get_order_id).exists():
+            if orderclothes.exists() and Order.objects.filter(id=get_order_id).exists():
                 clothes_quantity = orderclothes.get().quantity
-                print(clothes_quantity)
-                if  clothes_quantity > 1:
+                if clothes_quantity > 1:
                     orderclothes.update(quantity=clothes_quantity-1)
                 else :
                     orderclothes.get().delete()
@@ -113,9 +111,9 @@ class CartView(View):
 
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
-        except ValidationError:
-            return HttpResponse(status=400)
         except FieldDoesNotExist:
             return HttpResponse(status=400)
         except KeyError:
+            return HttpResponse(status=400)
+        except TypeError:
             return HttpResponse(status=400)

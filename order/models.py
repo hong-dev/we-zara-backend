@@ -3,7 +3,6 @@ import json
 import bcrypt
 import requests
 
-
 from django.db import models
 from account.models import Account
 from clothes.models import Clothes,Size,Color
@@ -19,7 +18,7 @@ class Order(models.Model):
         db_table ='orders'
 
 class OrderedClothes(models.Model):
-    order    = models.ForeignKey('Order', on_delete = models.SET_NULL, null = True)
+    order    = models.ForeignKey(Order, on_delete = models.SET_NULL, null = True)
     clothes  = models.ForeignKey(Clothes, on_delete = models.SET_NULL, null = True)
     size     = models.ForeignKey(Size, on_delete    = models.SET_NULL, null = True)
     color    = models.ForeignKey(Color, on_delete   = models.SET_NULL, null = True)
