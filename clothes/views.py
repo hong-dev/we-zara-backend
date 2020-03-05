@@ -6,6 +6,13 @@ from .models import Clothes, Color, Size, ClothesImage, New
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
+def extract_data(field_name, deduplicated_list):
+    field_spec = collections.namedtuple(field_name, f"{field_name}_id, {field_name}_name")
+    namedtuple_list = [field_spec(element[0], element[1]) for element in deduplicated_list]
+    dict_field = [dict(tuples._asdict()) for tuples in namedtuple_list]
+
+    return dict_field
+
 class SubCategoryView(View):
     def get(self, request, gender, clothes_type):
         try:
@@ -14,20 +21,14 @@ class SubCategoryView(View):
                 clothes__sub_category_id  = clothes_type
             ).order_by('clothes__price')
 
-            color_spec          = collections.namedtuple("colors", "color_id, color_name")
             deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
-            namedtuple_color    = [color_spec(element[0], element[1]) for element in deduplication_color]
-            dict_color          = [dict(tuples._asdict()) for tuples in namedtuple_color]
 
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
-            size_spec          = collections.namedtuple("sizes", "size_id, size_name")
             deduplication_size = set([(size.id, size.name) for size in size_list])
-            namedtuple_size    = [size_spec(element[0], element[1]) for element in deduplication_size]
-            dict_size          = [dict(tuples._asdict()) for tuples in namedtuple_size]
 
             filter_list = {
-                'colors' : dict_color,
-                'sizes'  : dict_size,
+                'colors' : extract_data("colors", deduplication_color),
+                'sizes'  : extract_data("sizes", deduplication_size),
                 'prices' : {"min_price" : clothes_list[0].clothes.price,
                             "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
             }
@@ -95,20 +96,14 @@ class ClothesNewView(View):
                 clothes__is_new           = True
              ).order_by('clothes__price')
 
-            color_spec          = collections.namedtuple("colors", "color_id, color_name")
             deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
-            namedtuple_color    = [color_spec(element[0], element[1]) for element in deduplication_color]
-            dict_color          = [dict(tuples._asdict()) for tuples in namedtuple_color]
 
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
-            size_spec          = collections.namedtuple("sizes", "size_id, size_name")
             deduplication_size = set([(size.id, size.name) for size in size_list])
-            namedtuple_size    = [size_spec(element[0], element[1]) for element in deduplication_size]
-            dict_size          = [dict(tuples._asdict()) for tuples in namedtuple_size]
 
             filter_list = {
-                'colors' : dict_color,
-                'sizes'  : dict_size,
+                'colors' : extract_data("colors", deduplication_color),
+                'sizes'  : extract_data("sizes", deduplication_size),
                 'prices' : {"min_price" : clothes_list[0].clothes.price,
                             "max_price" : clothes_list[len(clothes_list)-1].clothes.price}
             }
