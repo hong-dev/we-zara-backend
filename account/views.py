@@ -28,7 +28,9 @@ def validate(password):
 class SignupView(View):
     def post(self, request):
         account_data = json.loads(request.body)
+
         address_2 = account_data.get('address_2', None)
+        country   = account_data.get('country', '대한민국')
 
         try:
             if account_data['phone'].isdigit() == False:
@@ -45,7 +47,7 @@ class SignupView(View):
                 zip_code  = account_data['zip_code'],
                 address_1 = account_data['address_1'],
                 address_2 = address_2,
-                country   = account_data['country'],
+                country   = country,
                 phone     = account_data['phone'],
             ).save()
             return HttpResponse(status = 200)
