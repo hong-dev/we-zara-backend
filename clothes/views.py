@@ -44,7 +44,7 @@ class SubCategoryView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"clothes_list": clothes_lists, "filter_list": filter_list}, status = 200)
+            return JsonResponse({"filter_list": filter_list, "clothes_list": clothes_lists}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
@@ -122,7 +122,7 @@ class ClothesNewView(View):
                     'other_colors' : len(clothes_list.filter(clothes_id = result.clothes_id))-1
                 } for result in clothes_list]
 
-            return JsonResponse({"marketing": marketing_list, "new": new_list, "filter_list": filter_list}, status = 200)
+            return JsonResponse({"filter_list": filter_list, "marketing": marketing_list, "new": new_list}, status = 200)
 
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
