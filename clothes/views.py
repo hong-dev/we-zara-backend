@@ -7,9 +7,9 @@ from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
 def extract_data(field_name, deduplicated_list):
-    field_spec = collections.namedtuple(field_name, f"{field_name}_id, {field_name}_name")
+    field_spec      = collections.namedtuple(field_name, f"{field_name}_id, {field_name}_name")
     namedtuple_list = [field_spec(element[0], element[1]) for element in deduplicated_list]
-    dict_field = [dict(tuples._asdict()) for tuples in namedtuple_list]
+    dict_field      = [dict(tuples._asdict()) for tuples in namedtuple_list]
 
     return dict_field
 
