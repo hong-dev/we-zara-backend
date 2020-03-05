@@ -1,4 +1,5 @@
 import json
+import random
 import collections
 
 from .models import Clothes, Color, Size, ClothesImage, New
@@ -168,7 +169,11 @@ class SearchView(View):
 
             clothes_list = ClothesImage.objects.select_related('clothes').filter(clothes__name__icontains = keyword)
 
-            search_list = [element.clothes.name for element in clothes_list][:5]
+            name_list = [element.clothes.name for element in clothes_list]
+            if len(name_list) < 5:
+                search_list = random.sample(name_list, len(name_list))
+            else:
+                search_list = random.sample(name_list, 5)
 
             result_list = [
                 {
