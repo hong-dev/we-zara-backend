@@ -4,6 +4,7 @@ import collections
 
 from .models import Clothes, Color, Size, ClothesImage, New
 
+from ast          import literal_eval
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
 
@@ -22,10 +23,10 @@ class SubCategoryView(View):
                 clothes__sub_category_id  = clothes_type
             ).order_by('clothes__price')
 
-            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
+            deduplication_color = sorted(set([(clothes.color.id, clothes.color.name) for clothes in clothes_list]))
 
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
-            deduplication_size = set([(size.id, size.name) for size in size_list])
+            deduplication_size = sorted(set([(size.id, size.name) for size in size_list]))
 
             price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
 
@@ -98,10 +99,10 @@ class ClothesNewView(View):
                 clothes__is_new           = True
              ).order_by('clothes__price')
 
-            deduplication_color = set([(clothes.color.id, clothes.color.name) for clothes in clothes_list])
+            deduplication_color = sorted(set([(clothes.color.id, clothes.color.name) for clothes in clothes_list]))
 
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
-            deduplication_size = set([(size.id, size.name) for size in size_list])
+            deduplication_size = sorted(set([(size.id, size.name) for size in size_list]))
 
             price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
 
@@ -141,18 +142,29 @@ class ClothesDetailView(View):
             color_name   = Color.objects.get(id = req_color_id).name
             clothes_name = Clothes.objects.get(id = req_clothes_id).name
 
+            composition = clothes_detail.composition.split("}, ")
+            for index, value in enumerate(composition[:-1]):
+                composition[index] = value + "}"
+
             clothes_details = {
                 'images'       : list(list(clothes_detail.clothesimage_set.filter(color_id = req_color_id).values(
                     'main_image', 'image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7'))[0].values()),
-                'clothes'      : {"id"   : req_clothes_id, "name" : clothes_name},
+                'clothes'      : {"id" : req_clothes_id, "name" : clothes_name},
                 'price'        : clothes_detail.price,
-                'color'        : {"id"   : req_color_id, "name" : color_name},
+                'color'        : {"id" : req_color_id, "name" : color_name},
                 'description'  : clothes_detail.description,
-                'size'         : list(clothes_detail.clothessize_set.values('size_id', 'size__name')),
-                'other_colors' : list(clothes_detail.clothesimage_set.values('color__name','image7')),
-                'composition'  : clothes_detail.composition,
+                'size'         : [{"id" : element["size_id"], "name" : element["size__name"]}
+                                  for element in list(clothes_detail.clothessize_set.values('size_id', 'size__name'))],
+                'other_colors' : [{"id" : element["color_id"], "name" : element["color__name"], "image" : element["image1"]}
+                                  for element in list(clothes_detail.clothesimage_set.values('color_id', 'color__name', 'image1'))],
+                'composition'  : [literal_eval(element) for element in composition],
                 'care'         : list(clothes_detail.clothescare_set.values_list('care__name', flat = True))
             }
+
+            for color in clothes_details["other_colors"]:
+                if color["name"] == clothes_details["color"]["name"]:
+                    clothes_details["other_colors"].remove(color)
+                    break
 
             return JsonResponse({"clothes_details": clothes_details}, status = 200)
 
