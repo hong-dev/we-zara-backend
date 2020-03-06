@@ -136,26 +136,23 @@ class ClothesDetailView(View):
             if not ClothesImage.objects.filter(clothes_id = req_clothes_id, color_id = req_color_id).exists():
                 return HttpResponse(status = 404)
 
-            clothes_detail = Clothes.objects.prefetch_related(
-                'clothesimage_set',
-                'clothescare_set',
-                'clothessize_set').filter(id = req_clothes_id)
+            clothes_detail = Clothes.objects.prefetch_related('clothesimage_set', 'clothescare_set', 'clothessize_set').get(id = req_clothes_id)
 
             color_name   = Color.objects.get(id = req_color_id).name
             clothes_name = Clothes.objects.get(id = req_clothes_id).name
 
-            clothes_details = [{
-                'images'       : list(clothes.clothesimage_set.filter(color_id = req_color_id).values(
-                    'main_image', 'image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7')),
-                'clothes'      : {"clothes_id"   : req_clothes_id, "clothes_name" : clothes_name},
-                'price'        : clothes.price,
-                'color'        : {"color_id"   : req_color_id, "color_name" : color_name},
-                'description'  : clothes.description,
-                'size'         : list(clothes.clothessize_set.values('size_id', 'size__name')),
-                'other_colors' : list(clothes.clothesimage_set.values('color__name','image7')),
-                'composition'  : clothes.composition,
-                'care'         : list(clothes.clothescare_set.values_list('care__name', flat = True))
-            } for clothes in clothes_detail]
+            clothes_details = {
+                'images'       : list(list(clothes_detail.clothesimage_set.filter(color_id = req_color_id).values(
+                    'main_image', 'image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7'))[0].values()),
+                'clothes'      : {"id"   : req_clothes_id, "name" : clothes_name},
+                'price'        : clothes_detail.price,
+                'color'        : {"id"   : req_color_id, "name" : color_name},
+                'description'  : clothes_detail.description,
+                'size'         : list(clothes_detail.clothessize_set.values('size_id', 'size__name')),
+                'other_colors' : list(clothes_detail.clothesimage_set.values('color__name','image7')),
+                'composition'  : clothes_detail.composition,
+                'care'         : list(clothes_detail.clothescare_set.values_list('care__name', flat = True))
+            }
 
             return JsonResponse({"clothes_details": clothes_details}, status = 200)
 
