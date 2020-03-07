@@ -39,7 +39,7 @@ class SubCategoryView(View):
             clothes_lists = [
                 {
                     'id '          : result.clothes.id,
-                    'image'        : result.main_image,
+                    'image'        : result.image1,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
                     'name'         : result.clothes.name,
@@ -75,7 +75,7 @@ class SubCategoryView(View):
             clothes_lists = [
                 {
                     'id '          : result.clothes_id,
-                    'image'        : result.main_image,
+                    'image'        : result.image1,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
                     'name'         : result.clothes.name,
@@ -118,7 +118,7 @@ class ClothesNewView(View):
             new_list = [
                 {
                     'id'           : result.clothes_id,
-                    'image'        : result.main_image,
+                    'image'        : result.image1,
                     'color'        : result.color_id,
                     'new'          : result.clothes.is_new,
                     'name'         : result.clothes.name,
