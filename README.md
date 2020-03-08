@@ -7,15 +7,14 @@
 [![ZARA Clone project Demo](https://user-images.githubusercontent.com/53142539/76159278-0feb7580-6162-11ea-9bce-0ae3612c4b1d.png)](https://www.youtube.com/watch?v=T3Denvrn120&feature=youtu.be)
 
 ## Technologies
-- Python
-- Django web framework
-- AWS EC2, RDS
-- MySQL
-- CORS headers
+- Frontend : ReactJS, SASS
+- Backend : Python, Django, MySQL, CORS headers
+- Deployment : AWS
 
 ## Features
-### Data
+### Data / Deploy
 - Web Crawling : used Beautifulsoup, Selenium for dynamic web page
+- Deployment : AWS EC2(Server), RDS(Database)
 
 ### Account
 - Sign up : <br>
