@@ -4,6 +4,7 @@
 - [Front-End GitHub Repository](https://github.com/wecode-bootcamp-korea/we-zara-frontend)
 
 ## Demo
+[![ZARA Clone project Demo]("https://user-images.githubusercontent.com/53142539/76159109-59d35c00-6160-11ea-88b2-5386b236c1e2.png")]("https://www.youtube.com/watch?v=T3Denvrn120&feature=youtu.be")
 
 ## Technologies
 - Python
@@ -17,8 +18,9 @@
 - Web Crawling : used Beautifulsoup, Selenium for dynamic web page
 
 ### Account
-- Sign up : used Bcrypt for user password hashing
-		  : Email, Phone, Password Validation
+- Sign up : 
+-used Bcrypt for user password hashing
+-Email, Phone, Password Validation
 - Sign in : used JWT for generating token
 
 ### Clothes
