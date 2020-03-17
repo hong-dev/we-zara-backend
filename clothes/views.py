@@ -25,10 +25,14 @@ class SubCategoryView(View):
 
             deduplication_color = sorted(set([(clothes.color.id, clothes.color.name) for clothes in clothes_list]))
 
-            size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender, clothes__sub_category_id = clothes_type)
+            size_list = Size.objects.prefetch_related('clothes_set').filter(
+                clothes__main_category_id = gender,
+                clothes__sub_category_id = clothes_type
+            )
             deduplication_size = sorted(set([(size.id, size.name) for size in size_list]))
 
-            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4),
+                                                   round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
 
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
@@ -104,7 +108,8 @@ class ClothesNewView(View):
             size_list          = Size.objects.prefetch_related('clothes_set').filter(clothes__main_category_id = gender)
             deduplication_size = sorted(set([(size.id, size.name) for size in size_list]))
 
-            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4), round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
+            price_list = [price for price in range(round(clothes_list[0].clothes.price + 5000, -4),
+                                                   round(clothes_list[len(clothes_list)-1].clothes.price + 35000, -4), 30000)]
 
             filter_list = {
                 'colors' : extract_data("colors", deduplication_color),
@@ -137,7 +142,9 @@ class ClothesDetailView(View):
             if not ClothesImage.objects.filter(clothes_id = req_clothes_id, color_id = req_color_id).exists():
                 return HttpResponse(status = 404)
 
-            clothes_detail = Clothes.objects.prefetch_related('clothesimage_set', 'clothescare_set', 'clothessize_set').get(id = req_clothes_id)
+            clothes_detail = Clothes.objects.prefetch_related('clothesimage_set',
+                                                              'clothescare_set',
+                                                              'clothessize_set').get(id = req_clothes_id)
 
             color_name   = Color.objects.get(id = req_color_id).name
             clothes_name = Clothes.objects.get(id = req_clothes_id).name
