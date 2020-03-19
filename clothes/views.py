@@ -58,10 +58,9 @@ class SubCategoryView(View):
 
     def post(self, request, gender, clothes_type):
         filter_data = json.loads(request.body)
-
-        req_color = filter_data.get('color', None)
-        req_size  = filter_data.get('size', None)
-        req_price = filter_data.get('price', 0)
+        req_color   = filter_data.get('color', None)
+        req_size    = filter_data.get('size', None)
+        req_price   = filter_data.get('price', 0)
 
         try:
             clothes_list = ClothesImage.objects.select_related('clothes').filter(
@@ -91,7 +90,6 @@ class SubCategoryView(View):
                 return JsonResponse({"message": "ITEM_DOES_NOT_EXIST"}, status = 400)
 
             return JsonResponse({"clothes_list": clothes_lists}, status = 200)
-
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
@@ -145,17 +143,30 @@ class ClothesDetailView(View):
             clothes_detail = Clothes.objects.prefetch_related('clothesimage_set',
                                                               'clothescare_set',
                                                               'clothessize_set').get(id = req_clothes_id)
-
             color_name   = Color.objects.get(id = req_color_id).name
-            clothes_name = Clothes.objects.get(id = req_clothes_id).name
+            clothes_name = clothes_deatail.name
+            composition  = clothes_detail.composition.split("}, ")
 
-            composition = clothes_detail.composition.split("}, ")
             for index, value in enumerate(composition[:-1]):
                 composition[index] = value + "}"
 
+
+			detail = 
+					clothes_detail
+					.clothesimage_set
+					.get(color_id = req_color_id)
+					.values(
+                    	'main_image', 
+						'image1', 
+						'image2',
+						'image3',
+ 						'image4', 
+						'image5', 
+						'image6', 
+						'image7'
+					)
             clothes_details = {
-                'images'       : list(list(clothes_detail.clothesimage_set.filter(color_id = req_color_id).values(
-                    'main_image', 'image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7'))[0].values()),
+                'images'       : detail,
                 'clothes'      : {"id" : req_clothes_id, "name" : clothes_name},
                 'price'        : clothes_detail.price,
                 'color'        : {"id" : req_color_id, "name" : color_name},
@@ -174,7 +185,6 @@ class ClothesDetailView(View):
                     break
 
             return JsonResponse({"clothes_details": clothes_details}, status = 200)
-
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
@@ -206,6 +216,5 @@ class SearchView(View):
                 return JsonResponse({"message": "ITEM_DOES_NOT_EXIST"}, status = 400)
 
             return JsonResponse({"list" : search_list, "results": result_list}, status = 200)
-
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)

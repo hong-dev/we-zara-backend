@@ -25,6 +25,7 @@ class Clothes(models.Model):
     size          = models.ManyToManyField('Size', through = 'ClothesSize')
     color         = models.ManyToManyField('Color', through = 'ClothesColor')
     care          = models.ManyToManyField('Care', through = 'ClothesCare')
+    images        = models.ManyToManyField('Images', through = 'ClothesImages')
     created_at    = models.DateTimeField(auto_now_add = True)
     updated_at    = models.DateTimeField(auto_now = True)
 
@@ -33,15 +34,9 @@ class Clothes(models.Model):
 
 class ClothesImage(models.Model):
     clothes    = models.ForeignKey('Clothes', on_delete = models.SET_NULL, null = True)
-    color      = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
-    main_image = models.URLField()
-    image1     = models.URLField(null = True)
-    image2     = models.URLField(null = True)
-    image3     = models.URLField(null = True)
-    image4     = models.URLField(null = True)
-    image5     = models.URLField(null = True)
-    image6     = models.URLField(null = True)
-    image7     = models.URLField(null = True)
+    color      = models.ForeignKey('Color', on_delete   = models.SET_NULL, null = True)
+    image      = models.URLField()
+    created_at = models.DateTimeField(auto_now_add      = True, null            = True)
 
     class Meta:
         db_table = 'clothes_images'

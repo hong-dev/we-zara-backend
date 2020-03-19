@@ -12,17 +12,12 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
 def validate(password):
-    validate_condition = [
+    return any(validator(password) for validator in [
         lambda s: any(x.isupper() for x in s),
         lambda s: any(x.islower() for x in s),
         lambda s: any(x.isdigit() for x in s),
         lambda s: len(s) >= 8
-    ]
-    is_password_valid = True
-    for validator in validate_condition:
-        if not validator(password):
-            return False
-    return is_password_valid
+    ])
 
 class SignupView(View):
     def post(self, request):
@@ -32,8 +27,9 @@ class SignupView(View):
         country   = account_data.get('country', '대한민국')
 
         try:
-            if account_data['phone'].isdigit() == False:
+            if not account_data['phone'].isdigit():
                 return JsonResponse({"message":"PHONE_VALIDATION_ERROR"}, status = 400)
+
             if not validate(account_data['password']):
                 return JsonResponse({"message":"PASSWORD_VALIDATION_ERROR"}, status = 400)
 
@@ -49,14 +45,12 @@ class SignupView(View):
                 country   = country,
                 phone     = account_data['phone'],
             ).save()
-            return HttpResponse(status = 200)
 
+            return HttpResponse(status = 200)
         except IntegrityError:
             return JsonResponse({"message":"EMAIL_ALREADY_EXISTS"}, status = 400)
-
         except ValidationError:
             return JsonResponse({"message":"EMAIL_VALIDATION_ERROR"}, status = 400)
-
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
